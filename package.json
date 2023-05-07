@@ -1,0 +1,24 @@
+{
+  "name": "@web.worker/mp3-meta",
+  "version": "1.0.0",
+  "description": "mp3 meta data parser",
+  "main": "index.js",
+  "type": "module",
+  "bin": {
+    "handle-podcast": "./bin/cli.js",
+    "handle_podcast": "./bin/cli.js",
+    "mp3-meta": "./bin/cli.js"
+  },
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "minimist": "^1.2.8",
+    "music-metadata": "^8.1.4",
+    "node-id3": "^0.2.6",
+    "prompts": "^2.4.2"
+  }
+}
