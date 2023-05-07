@@ -1,6 +1,8 @@
 #!/usr/bin/env node
 
 import path from "path";
+import { fileURLToPath } from "url";
+
 import minimist from "minimist";
 import { promptsQuestion } from "../src/model.js";
 import id3 from "node-id3";
@@ -106,8 +108,13 @@ if (type === "meta") {
   } else {
     console.log("write");
     const response2 = await prompts(promptsQuestion);
-    const cover = path.resolve(path.dirname(""), response2.APIC);
-    // console.log(cover);
+
+    const scriptUrl = import.meta.url;
+    const scriptPath = fileURLToPath(scriptUrl);
+    const absolutePath = path.dirname(scriptPath);
+
+    const cover = path.resolve(absolutePath, "../", response2.APIC);
+    console.log(cover);
     response2.APIC = cover;
     // console.log(response2);
 
