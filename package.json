@@ -1,6 +1,6 @@
 {
-  "name": "@web.worker/mp3-meta",
-  "version": "1.0.0",
+  "name": "@web.worker/handle_podcast",
+  "version": "0.0.1",
   "description": "mp3 meta data parser",
   "main": "index.js",
   "type": "module",
