@@ -20,7 +20,7 @@ export const promptsQuestion = [
     type: "text",
     name: "APIC",
     message: "请输入封面图",
-    initial: "./cover/logo800x800.png",
+    initial: "./cover/webworker-logo-3k.png",
   },
   {
     type: "number",

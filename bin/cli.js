@@ -7,6 +7,7 @@ import minimist from "minimist";
 import { promptsQuestion } from "../src/model.js";
 import id3 from "node-id3";
 import prompts from "prompts";
+import { spawn, exec } from "child_process";
 
 const argv = minimist(process.argv.slice(2), {
   alias: {
@@ -63,6 +64,34 @@ const mainEntryPrompt = {
 };
 
 const { type } = await prompts(mainEntryPrompt);
+
+const spawnPromise = (command, args = []) => {
+  return new Promise((resolve, reject) => {
+    const child = spawn(command, args);
+    let stdout = "";
+    let stderr = "";
+
+    child.stdout.on("data", (data) => {
+      stdout += data;
+      console.log(data.toString());
+    });
+
+    child.stderr.on("data", (data) => {
+      stderr += data;
+      console.error(data.toString());
+    });
+
+    child.on("close", (code) => {
+      if (code !== 0) {
+        reject(new Error(`Command ${command} exited with code ${code}`));
+      } else {
+        resolve({ stdout, stderr });
+      }
+    });
+    // 处理 error
+    child.on("error", reject);
+  });
+};
 
 async function main() {
   if (type === "meta") {
@@ -131,44 +160,17 @@ async function main() {
     //   }
   } else if (type === "wav") {
     // 使用子进程调用 ffmpeg
-    const { spawn, exec } = await import("child_process");
-    // const { promisify } = await import("util");
-    // const execPromise = promisify(exec);
 
-    const spawnPromise = (command, args = []) => {
-      return new Promise((resolve, reject) => {
-        const child = spawn(command, args);
-        let stdout = "";
-        let stderr = "";
-
-        child.stdout.on("data", (data) => {
-          stdout += data;
-          console.log(data.toString());
-        });
-
-        child.stderr.on("data", (data) => {
-          stderr += data;
-          console.error(data.toString());
-        });
-
-        child.on("close", (code) => {
-          if (code !== 0) {
-            reject(new Error(`Command ${command} exited with code ${code}`));
-          } else {
-            resolve({ stdout, stderr });
-          }
-        });
-        // 处理 error
-        child.on("error", reject);
-      });
-    };
     console.log("开始转换");
     try {
       const bash = `ffmpeg -i ${audioFilePath} -ar 16000 -ac 1 -c:a pcm_s16le ${audioFilePath}.wav`;
-      const { stdout, stderr } = await spawnPromise(bash);
-      console.log(`stdout: ${stdout}`);
-      console.error(`stderr: ${stderr}`);
-      console.log("转换完成");
+      exec(bash, (err, stdout, stderr) => {
+        if (err) {
+          console.log(err);
+        } else {
+          console.log("转换完成");
+        }
+      });
     } catch (error) {
       console.log("处理失败" + error);
     }
@@ -183,10 +185,15 @@ async function main() {
       console.log("开始转写");
       const basePath = "/Users/otto/cpp-raw";
       try {
-        await execPromise(
-          `${basePath}/main -m ${basePath}/models/ggml-medium.bin -f ${audioFilePath}.wav -osrt -l zh`
-        );
-        console.log("转写完成");
+        const bash = `${basePath}/main -m ${basePath}/models/ggml-medium.bin -f ${audioFilePath}.wav -osrt -l zh`;
+
+        exec(bash, (err, stdout, stderr) => {
+          if (err) {
+            console.log(err);
+          } else {
+            console.log("转换完成");
+          }
+        });
         console.log('转写结果在当前目录下的 "output.srt" 文件中');
         console.log(audioFilePath);
       } catch (error) {
@@ -205,6 +212,39 @@ async function main() {
       }
     } else {
       console.log("已取消");
+    }
+  } else if (type === "mp3") {
+    // ffmpeg -i 00-0626-start.m4a -acodec libmp3lame -q:a 2 100-0626-start.mp3
+    // 执行
+    try {
+      const bash = `ffmpeg -i ${audioFilePath} -acodec libmp3lame -q:a 2 ${audioFilePath}.mp3`;
+      exec(bash, (err, stdout, stderr) => {
+        if (err) {
+          console.log(err);
+        } else {
+          console.log("转换完成");
+        }
+      });
+    } catch (error) {
+      console.log("处理失败" + error);
+    }
+  } else if (type === "text") {
+    console.log("开始转写");
+    const basePath = "/Users/otto/cpp-raw";
+    try {
+      const bash = `${basePath}/main -m ${basePath}/models/ggml-medium.bin -f ${audioFilePath}.wav -osrt -l zh`;
+
+      exec(bash, (err, stdout, stderr) => {
+        if (err) {
+          console.log(err);
+        } else {
+          console.log("转换完成");
+        }
+      });
+      console.log('转写结果在当前目录下的 "output.srt" 文件中');
+      console.log(audioFilePath);
+    } catch (error) {
+      console.log("转写失败" + error);
     }
   }
 }
