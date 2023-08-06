@@ -185,15 +185,16 @@ async function main() {
       console.log("开始转写");
       const basePath = "/Users/otto/cpp-raw";
       try {
-        const bash = `${basePath}/main -m ${basePath}/models/ggml-medium.bin -f ${audioFilePath}.wav -osrt -l zh`;
+        const bash = `${basePath}/main -m ${basePath}/models/ggml-medium.en.bin -f ${audioFilePath}.wav -osrt `;
 
-        exec(bash, (err, stdout, stderr) => {
-          if (err) {
-            console.log(err);
-          } else {
-            console.log("转换完成");
-          }
-        });
+        // exec(bash, (err, stdout, stderr) => {
+        //   if (err) {
+        //     console.log(err);
+        //   } else {
+        //     console.log("转换完成");
+        //   }
+        // });
+        console.log(bash);
         console.log('转写结果在当前目录下的 "output.srt" 文件中');
         console.log(audioFilePath);
       } catch (error) {
@@ -232,17 +233,29 @@ async function main() {
     console.log("开始转写");
     const basePath = "/Users/otto/cpp-raw";
     try {
-      const bash = `${basePath}/main -m ${basePath}/models/ggml-medium.bin -f ${audioFilePath}.wav -osrt -l zh`;
+      // 等待用户输入 prompt
+      const promptsList = {
+        type: "text",
+        name: "prompt",
+        message: "请输入 prompt",
+      };
+      const response = await prompts(promptsList);
+      // console.log(response.prompt);
 
-      exec(bash, (err, stdout, stderr) => {
-        if (err) {
-          console.log(err);
-        } else {
-          console.log("转换完成");
-        }
-      });
-      console.log('转写结果在当前目录下的 "output.srt" 文件中');
-      console.log(audioFilePath);
+      const bash = `${basePath}/main -m ${basePath}/models/ggml-small.en.bin -f ${audioFilePath}.wav -osrt --prompt 'Each identification waits for the discussion to end instead of breaking in the middle.${
+        response.prompt || ""
+      }'`;
+
+      console.log(bash);
+      // exec(bash, (err, stdout, stderr) => {
+      //   if (err) {
+      //     console.log(err);
+      //   } else {
+      //     console.log("转换完成");
+      //   }
+      // });
+      // console.log('转写结果在当前目录下的 "output.srt" 文件中');
+      // console.log(audioFilePath);
     } catch (error) {
       console.log("转写失败" + error);
     }
