@@ -2,6 +2,7 @@
 
 ```sh
 mp3-meta --path ~/Downloads/No.0-web-worker有名字了.m4a
+mp3-meta --url http://xx.mp3
 ```
 
 必须先指定音频文件。
