@@ -50,6 +50,12 @@ const mp3ToWav = (filePath = "") => {
 };
 
 const handleTransFile = async (filePath = "") => {
+  // if(filepath)
+  // 如果 filePath 的后缀不是 wav，补充 wav 后缀
+  const isWav = filePath.endsWith(".wav");
+  if (!isWav) {
+    filePath = filePath + ".wav";
+  }
   const promptOption = {
     type: "text",
     name: "prompt",
@@ -115,10 +121,10 @@ const handleCommand = async (filePath = "") => {
         value: "wav",
       },
       // 文件转为 mp3 格式
-      {
-        title: "文件转为 mp3 格式",
-        value: "mp3",
-      },
+      // {
+      //   title: "文件转为 mp3 格式",
+      //   value: "mp3",
+      // },
       // 文字转写
       {
         title: "文字转写",
@@ -129,7 +135,7 @@ const handleCommand = async (filePath = "") => {
   const { type } = await prompts(mainEntryPrompt);
 
   if (type === "meta") {
-    await handleMeta();
+    await handleMeta(filePath);
   } else if (type === "wav") {
     // 使用子进程调用 ffmpeg
 
@@ -206,7 +212,7 @@ const handleCommand = async (filePath = "") => {
 };
 
 // meta
-const handleMeta = async () => {
+const handleMeta = async (filePath) => {
   const { Promise: NodeID3Promise } = id3;
 
   const writeMeta = (tags, filepath) => {
@@ -249,8 +255,7 @@ const handleMeta = async () => {
   const response = await prompts(promptsList);
   if (response.type === "read") {
     console.log("read");
-    // console.log(audioFilePath);
-    readMeta(audioFilePath);
+    readMeta(filePath);
   } else {
     console.log("write");
     const response2 = await prompts(promptsQuestion);
@@ -260,10 +265,12 @@ const handleMeta = async () => {
     const absolutePath = path.dirname(scriptPath);
 
     const cover = path.resolve(absolutePath, "../", response2.APIC);
-    console.log(cover);
+    // console.log(cover);
     response2.APIC = cover;
     // console.log(response2);
 
-    writeMeta(response2, audioFilePath);
+    // console.log(response2, filePath);
+
+    writeMeta(response2, filePath);
   }
 };

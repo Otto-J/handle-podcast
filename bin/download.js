@@ -27,7 +27,7 @@ export const handleUrl = async (url = "") => {
 
   console.log("要下载的地址是：", _url);
   // for test
-  _url = _url ?? "https://traffic.libsyn.com/syntax/Syntax_-_663.mp3";
+  _url = _url;
 
   return downloadFile(_url, targetFolderPath)
     .then((filePath) => {
@@ -54,6 +54,13 @@ function downloadFile(fileUrl, targetFolderPath) {
 
     const fileName = path.basename(fileUrl);
     const filePath = path.join(targetFolderPath, fileName);
+
+    // 判断文件是否已经存在，如果已经存在提示退出
+    if (fs.existsSync(filePath)) {
+      console.log("文件已经存在，无需下载");
+      resolve(filePath);
+      return;
+    }
 
     const fileStream = fs.createWriteStream(filePath);
 
