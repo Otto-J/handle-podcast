@@ -8,6 +8,10 @@ import { spawnCommand, executeCommand } from "./utils.js";
 import { promptsQuestion } from "../src/model.js";
 import id3 from "node-id3";
 import prompts from "prompts";
+import dotenv from "dotenv";
+import { cliEntryPrompt, handleFilePrompt } from "../src/model.js";
+
+dotenv.config();
 
 export const handleTrans = async (_path = "") => {
   console.log("1,文件地址是：" + path);
@@ -36,7 +40,7 @@ export const handleTrans = async (_path = "") => {
 };
 
 const mp3ToWav = (filePath = "") => {
-  const command = `ffmpeg -i ${filePath} -acodec pcm_s16le -ac 1 -ar 16000 ${filePath}.wav`;
+  const command = `${process.env.FFMPEG_BIN} -i ${filePath} -acodec pcm_s16le -ac 1 -ar 16000 ${filePath}.wav`;
   return executeCommand(command)
     .then(({ stdout, stderr }) => {
       console.log("4,stdout:", stdout);
@@ -85,13 +89,17 @@ const handleTransFile = async (filePath = "") => {
     ],
   };
   const { type } = await prompts(promptsList);
-  const basePath = "/Users/otto/cpp-raw";
 
-  const command = `${basePath}/main -m ${basePath}/models/ggml-${type}.en.bin -f ${filePath} -osrt --prompt 'Each identification waits for the discussion to end instead of breaking in the middle.${
-    prompt || ""
+  const bin = process.env.WHISPER_BIN;
+
+  const command = `${bin} -m ${
+    process.env.WHISPER_MODEL
+  }/ggml-${type}.en.bin -f ${filePath} -osrt --prompt '${prompt || ""} ${
+    process.env.BASE_PROMPT
   }'`;
 
   const args = command.split(" ");
+  console.log("command:", args[0], args.slice(1));
 
   return spawnCommand(args[0], args.slice(1))
     .then(() => {
@@ -106,32 +114,7 @@ const handleTransFile = async (filePath = "") => {
 const handleCommand = async (filePath = "") => {
   console.log(3, filePath);
   // 核心不同入口
-  const mainEntryPrompt = {
-    type: "select",
-    name: "type",
-    message: "选择对文件进行的处理方式",
-    choices: [
-      // 处理 metadata 信息
-      {
-        title: "处理 metadata 信息",
-        value: "meta",
-      },
-      {
-        title: "文件转为 wav 格式，方便转写",
-        value: "wav",
-      },
-      // 文件转为 mp3 格式
-      // {
-      //   title: "文件转为 mp3 格式",
-      //   value: "mp3",
-      // },
-      // 文字转写
-      {
-        title: "文字转写",
-        value: "text",
-      },
-    ],
-  };
+  const mainEntryPrompt = handleFilePrompt;
   const { type } = await prompts(mainEntryPrompt);
 
   if (type === "meta") {
@@ -153,35 +136,6 @@ const handleCommand = async (filePath = "") => {
       if (response.isStart) {
         console.log("开始转写");
         await handleTransFile(filePath);
-
-        //   const basePath = "/Users/otto/cpp-raw";
-        //   try {
-        //     const bash = `${basePath}/main -m ${basePath}/models/ggml-medium.en.bin -f ${audioFilePath}.wav -osrt `;
-
-        //     // exec(bash, (err, stdout, stderr) => {
-        //     //   if (err) {
-        //     //     console.log(err);
-        //     //   } else {
-        //     //     console.log("转换完成");
-        //     //   }
-        //     // });
-        //     console.log(bash);
-        //     console.log('转写结果在当前目录下的 "output.srt" 文件中');
-        //     console.log(audioFilePath);
-        //   } catch (error) {
-        //     console.log("转写失败" + error);
-        //   }
-        //   // 是否需要转 vtt
-        //   const promptsList = {
-        //     type: "confirm",
-        //     name: "isVtt",
-        //     message: "是否需要转换为 vtt 格式",
-        //   };
-        //   const response = await prompts(promptsList);
-        //   if (response.isVtt) {
-        //   } else {
-        //     console.log("已取消");
-        //   }
       } else {
         console.log("不需要转写");
       }
@@ -190,7 +144,7 @@ const handleCommand = async (filePath = "") => {
     // ffmpeg -i 00-0626-start.m4a -acodec libmp3lame -q:a 2 100-0626-start.mp3
     // 执行
     try {
-      const bash = `ffmpeg -i ${audioFilePath} -acodec libmp3lame -q:a 2 ${audioFilePath}.mp3`;
+      const bash = `${process.env.FFMPEG_BIN} -i ${audioFilePath} -acodec libmp3lame -q:a 2 ${audioFilePath}.mp3`;
       exec(bash, (err, stdout, stderr) => {
         if (err) {
           console.log(err);
@@ -231,26 +185,7 @@ const handleMeta = async (filePath) => {
     });
   };
 
-  const promptsList = [
-    {
-      type: "select",
-      name: "type",
-      message: "读取 meta 还是写入 meta?",
-      choices: [
-        {
-          title: "读取",
-          value: "read",
-          description: "写入对应的 metadata 信息",
-        },
-        {
-          title: "写入",
-          description: "写入对应的 metadata 信息",
-          value: "write",
-        },
-      ],
-      initial: 0,
-    },
-  ];
+  const promptsList = cliEntryPrompt;
 
   const response = await prompts(promptsList);
   if (response.type === "read") {
@@ -265,11 +200,7 @@ const handleMeta = async (filePath) => {
     const absolutePath = path.dirname(scriptPath);
 
     const cover = path.resolve(absolutePath, "../", response2.APIC);
-    // console.log(cover);
     response2.APIC = cover;
-    // console.log(response2);
-
-    // console.log(response2, filePath);
 
     writeMeta(response2, filePath);
   }

@@ -51,3 +51,47 @@ export const promptsQuestion = [
     initial: getCurrentDate(),
   },
 ];
+
+export const cliEntryPrompt = [
+  {
+    type: "select",
+    name: "type",
+    message: "读取 meta 还是写入 meta?",
+    choices: [
+      {
+        title: "读取",
+        value: "read",
+        description: "写入对应的 metadata 信息",
+      },
+      {
+        title: "写入",
+        description: "写入对应的 metadata 信息",
+        value: "write",
+      },
+    ],
+    initial: 0,
+  },
+];
+
+export const handleFilePrompt = {
+  type: "select",
+  name: "type",
+  message: "选择对文件进行的处理方式",
+  choices: [
+    // 处理 metadata 信息
+    {
+      title: "处理 metadata 信息",
+      value: "meta",
+    },
+    {
+      title: "文件转为 wav 格式，方便转写",
+      value: "wav",
+    },
+
+    // 文字转写
+    {
+      title: "文字转写",
+      value: "text",
+    },
+  ],
+};

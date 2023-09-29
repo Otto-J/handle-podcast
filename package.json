@@ -1,5 +1,5 @@
 {
-  "name": "@web.worker/handle_podcast",
+  "name": "@web.worker/mp3-meta",
   "version": "0.0.1",
   "description": "mp3 meta data parser",
   "main": "index.js",
@@ -11,16 +11,25 @@
     "mp3-download": "./bin/download.js"
   },
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "check": "tsc --noEmit",
+    "build": "tsx src/index.ts"
   },
   "keywords": [],
   "author": "",
   "license": "ISC",
   "dependencies": {
+    "cheerio": "1.0.0-rc.12",
+    "cli-progress": "^3.12.0",
+    "dotenv": "^16.3.1",
     "minimist": "^1.2.8",
     "music-metadata": "^8.1.4",
     "node-fetch": "^3.3.2",
     "node-id3": "^0.2.6",
     "prompts": "^2.4.2"
+  },
+  "devDependencies": {
+    "@types/node": "20",
+    "tsx": "^3.13.0",
+    "typescript": "^5.2.2"
   }
 }
