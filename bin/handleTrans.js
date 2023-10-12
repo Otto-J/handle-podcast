@@ -8,10 +8,8 @@ import { spawnCommand, executeCommand } from "./utils.js";
 import { promptsQuestion } from "../src/model.js";
 import id3 from "node-id3";
 import prompts from "prompts";
-import dotenv from "dotenv";
 import { cliEntryPrompt, handleFilePrompt } from "../src/model.js";
-
-dotenv.config();
+import { WHISPER_BIN, WHISPER_MODEL, FFMPEG_BIN, BASE_PROMPT } from "../env.js";
 
 export const handleTrans = async (_path = "") => {
   console.log("1,文件地址是：" + path);
@@ -40,7 +38,9 @@ export const handleTrans = async (_path = "") => {
 };
 
 const mp3ToWav = (filePath = "") => {
-  const command = `${process.env.FFMPEG_BIN} -i ${filePath} -acodec pcm_s16le -ac 1 -ar 16000 ${filePath}.wav`;
+  console.log("FFMPEG_BIN", FFMPEG_BIN);
+
+  const command = `${FFMPEG_BIN} -i ${filePath} -acodec pcm_s16le -ac 1 -ar 16000 ${filePath}.wav`;
   return executeCommand(command)
     .then(({ stdout, stderr }) => {
       console.log("4,stdout:", stdout);
@@ -90,13 +90,12 @@ const handleTransFile = async (filePath = "") => {
   };
   const { type } = await prompts(promptsList);
 
-  const bin = process.env.WHISPER_BIN;
+  const bin = WHISPER_BIN;
+  // console.log(bin, bin2, bin === bin2);
 
-  const command = `${bin} -m ${
-    process.env.WHISPER_MODEL
-  }/ggml-${type}.en.bin -f ${filePath} -osrt --prompt '${prompt || ""} ${
-    process.env.BASE_PROMPT
-  }'`;
+  const command = `${bin} -m ${WHISPER_MODEL}/ggml-${type}.en.bin -f ${filePath} -osrt --prompt '${
+    prompt || ""
+  } ${BASE_PROMPT}'`;
 
   const args = command.split(" ");
   console.log("command:", args[0], args.slice(1));
@@ -144,7 +143,7 @@ const handleCommand = async (filePath = "") => {
     // ffmpeg -i 00-0626-start.m4a -acodec libmp3lame -q:a 2 100-0626-start.mp3
     // 执行
     try {
-      const bash = `${process.env.FFMPEG_BIN} -i ${audioFilePath} -acodec libmp3lame -q:a 2 ${audioFilePath}.mp3`;
+      const bash = `${FFMPEG_BIN} -i ${audioFilePath} -acodec libmp3lame -q:a 2 ${audioFilePath}.mp3`;
       exec(bash, (err, stdout, stderr) => {
         if (err) {
           console.log(err);

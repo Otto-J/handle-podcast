@@ -14,22 +14,49 @@ export const promptsQuestion = [
     message: "请输入标题",
   },
   {
-    type: "text",
+    type: "select",
     name: "artist",
     message: "请输入作者",
-    initial: "WebWorker.tech",
+    choices: [
+      {
+        title: "WebWorker.tech",
+        value: "WebWorker.tech",
+      },
+      {
+        title: "辛宝Otto",
+        value: "辛宝Otto",
+      },
+    ],
   },
   {
-    type: "text",
+    type: "select",
     name: "album",
     message: "请输入专辑",
-    initial: "Web Worker",
+    choices: [
+      {
+        title: "Web Worker",
+        value: "Web Worker",
+      },
+      {
+        title: "咿呀 能跑就行！",
+        value: "咿呀 能跑就行！",
+      },
+    ],
   },
   {
-    type: "text",
+    type: "select",
     name: "APIC",
     message: "请输入封面图",
-    initial: "./cover/webworker-logo-3k.png",
+    choices: [
+      {
+        title: "Web Worker",
+        value: "./cover/webworker.png",
+      },
+      {
+        title: "咿呀 能跑就行！",
+        value: "./cover/run.png",
+      },
+    ],
   },
   {
     type: "number",
