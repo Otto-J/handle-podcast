@@ -75,16 +75,28 @@ const handleTransFile = async (filePath = "") => {
     choices: [
       // 处理 metadata 信息
       {
+        title: "base.en",
+        value: "base.en",
+      },
+      {
+        title: "small.en",
+        value: "small.en",
+      },
+      {
+        title: "medium.en",
+        value: "medium.en",
+      },
+      {
         title: "base",
         value: "base",
       },
       {
-        title: "small",
-        value: "small",
-      },
-      {
         title: "medium",
         value: "medium",
+      },
+      {
+        title: "small",
+        value: "small",
       },
     ],
   };
@@ -93,7 +105,7 @@ const handleTransFile = async (filePath = "") => {
   const bin = WHISPER_BIN;
   // console.log(bin, bin2, bin === bin2);
 
-  const command = `${bin} -m ${WHISPER_MODEL}/ggml-${type}.en.bin -f ${filePath} -osrt --prompt '${
+  const command = `${bin} -m ${WHISPER_MODEL}/ggml-${type}.bin -f ${filePath} -osrt --prompt '${
     prompt || ""
   } ${BASE_PROMPT}'`;
 
