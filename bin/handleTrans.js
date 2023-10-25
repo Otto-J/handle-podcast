@@ -53,7 +53,7 @@ const mp3ToWav = (filePath = "") => {
     });
 };
 
-const othersToMp3 = (file) => {
+const othersToMp3 = (filePath = "") => {
   const command = `${FFMPEG_BIN} -i ${filePath} -acodec libmp3lame -ab 192k -ac 2 ${filePath}.mp3`;
   return executeCommand(command)
     .then(({ stdout, stderr }) => {
