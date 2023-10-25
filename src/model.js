@@ -114,6 +114,10 @@ export const handleFilePrompt = {
       title: "文件转为 wav 格式，方便转写",
       value: "wav",
     },
+    {
+      title: "文件转为 mp3 格式",
+      value: "mp3",
+    },
 
     // 文字转写
     {

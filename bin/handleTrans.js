@@ -53,6 +53,20 @@ const mp3ToWav = (filePath = "") => {
     });
 };
 
+const othersToMp3 = (file) => {
+  const command = `${FFMPEG_BIN} -i ${filePath} -acodec libmp3lame -ab 192k -ac 2 ${filePath}.mp3`;
+  return executeCommand(command)
+    .then(({ stdout, stderr }) => {
+      console.log("4,stdout:", stdout);
+      console.log("5,stderr:", stderr);
+      return { status: true, path: filePath + ".mp3" };
+    })
+    .catch((error) => {
+      console.error("Error:", error);
+      return { status: false, filePath: "" };
+    });
+};
+
 const handleTransFile = async (filePath = "") => {
   // if(filepath)
   // 如果 filePath 的后缀不是 wav，补充 wav 后缀
@@ -123,13 +137,18 @@ const handleTransFile = async (filePath = "") => {
 };
 
 const handleCommand = async (filePath = "") => {
-  console.log(3, filePath);
+  // console.log(3, filePath);
   // 核心不同入口
   const mainEntryPrompt = handleFilePrompt;
   const { type } = await prompts(mainEntryPrompt);
 
   if (type === "meta") {
     await handleMeta(filePath);
+  } else if (type === "mp3") {
+    const res = await othersToMp3(filePath);
+    if (res.status) {
+      console.log("转换完成");
+    }
   } else if (type === "wav") {
     // 使用子进程调用 ffmpeg
 
