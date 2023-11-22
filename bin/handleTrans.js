@@ -112,6 +112,10 @@ const handleTransFile = async (filePath = "") => {
         title: "small",
         value: "small",
       },
+      {
+        title: "large-v3",
+        value: "large-v3",
+      },
     ],
   };
   const { type } = await prompts(promptsList);
