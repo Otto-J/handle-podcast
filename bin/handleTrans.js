@@ -1,241 +1,250 @@
 #!/usr/bin/env node
 
-import path from "path";
-import { fileURLToPath } from "url";
-import { spawn, exec } from "child_process";
-import { spawnCommand, executeCommand } from "./utils.js";
+import { exec } from 'node:child_process'
+import path from 'node:path'
+import { fileURLToPath } from 'node:url'
+import id3 from 'node-id3'
 
-import { promptsQuestion } from "../src/model.js";
-import id3 from "node-id3";
-import prompts from "prompts";
-import { cliEntryPrompt, handleFilePrompt } from "../src/model.js";
-import { WHISPER_BIN, WHISPER_MODEL, FFMPEG_BIN, BASE_PROMPT } from "../env.js";
+import prompts from 'prompts'
+import { BASE_PROMPT, FFMPEG_BIN, WHISPER_BIN, WHISPER_MODEL } from '../env.js'
+import { cliEntryPrompt, handleFilePrompt, promptsQuestion } from '../src/model.js'
+import { executeCommand, spawnCommand } from './utils.js'
 
-export const handleTrans = async (_path = "") => {
-  console.log("1,文件地址是：" + path);
-  let handlePath = "";
-  if (typeof _path !== "string") {
+export async function handleTrans(_path = '') {
+  console.log(`1,文件地址是：${path}`)
+  let handlePath = ''
+  if (typeof _path !== 'string') {
     const promptsList = {
-      type: "text",
-      name: "path",
-      message: "请输入文件路径",
-    };
-    console.log("未检测到远程路径");
-    const response = await prompts(promptsList);
-    handlePath = response.path;
+      type: 'text',
+      name: 'path',
+      message: '请输入文件路径',
+    }
+    console.log('未检测到远程路径')
+    const response = await prompts(promptsList)
+    handlePath = response.path
   }
-  const isAbsolutePath = path.isAbsolute(_path);
+  const isAbsolutePath = path.isAbsolute(_path)
   if (isAbsolutePath) {
-    handlePath = _path;
-  } else {
+    handlePath = _path
+  }
+  else {
     // 如果是相对路径
-    const currentPath = process.cwd();
-    handlePath = path.resolve(currentPath, _path);
+    const currentPath = process.cwd()
+    handlePath = path.resolve(currentPath, _path)
   }
 
   // console.log("2, 文件地址是：" + handlePath);
-  handleCommand(handlePath);
-};
+  handleCommand(handlePath)
+}
 
-const mp3ToWav = (filePath = "") => {
-  console.log("FFMPEG_BIN", FFMPEG_BIN);
+function mp3ToWav(filePath = '') {
+  console.log('FFMPEG_BIN', FFMPEG_BIN)
 
-  const command = `${FFMPEG_BIN} -i ${filePath} -acodec pcm_s16le -ac 1 -ar 16000 ${filePath}.wav`;
+  const command = `${FFMPEG_BIN} -i ${filePath} -acodec pcm_s16le -ac 1 -ar 16000 ${filePath}.wav`
   return executeCommand(command)
     .then(({ stdout, stderr }) => {
-      console.log("4,stdout:", stdout);
-      console.log("5,stderr:", stderr);
-      return { status: true, path: filePath + ".wav" };
+      console.log('4,stdout:', stdout)
+      console.log('5,stderr:', stderr)
+      return { status: true, path: `${filePath}.wav` }
     })
     .catch((error) => {
-      console.error("Error:", error);
-      return { status: false, filePath: "" };
-    });
-};
+      console.error('Error:', error)
+      return { status: false, filePath: '' }
+    })
+}
 
-const othersToMp3 = (filePath = "") => {
-  const command = `${FFMPEG_BIN} -i ${filePath} -acodec libmp3lame -ab 192k -ac 2 ${filePath}.mp3`;
+function othersToMp3(filePath = '') {
+  const command = `${FFMPEG_BIN} -i ${filePath} -acodec libmp3lame -ab 192k -ac 2 ${filePath}.mp3`
   return executeCommand(command)
     .then(({ stdout, stderr }) => {
-      console.log("4,stdout:", stdout);
-      console.log("5,stderr:", stderr);
-      return { status: true, path: filePath + ".mp3" };
+      console.log('4,stdout:', stdout)
+      console.log('5,stderr:', stderr)
+      return { status: true, path: `${filePath}.mp3` }
     })
     .catch((error) => {
-      console.error("Error:", error);
-      return { status: false, filePath: "" };
-    });
-};
+      console.error('Error:', error)
+      return { status: false, filePath: '' }
+    })
+}
 
-const handleTransFile = async (filePath = "") => {
+async function handleTransFile(filePath = '') {
   // if(filepath)
   // 如果 filePath 的后缀不是 wav，补充 wav 后缀
-  const isWav = filePath.endsWith(".wav");
+  const isWav = filePath.endsWith('.wav')
   if (!isWav) {
-    filePath = filePath + ".wav";
+    filePath = `${filePath}.wav`
   }
   const promptOption = {
-    type: "text",
-    name: "prompt",
-    message: "请补充输入 prompt",
-  };
-  const { prompt } = await prompts(promptOption);
+    type: 'text',
+    name: 'prompt',
+    message: '请补充输入 prompt',
+  }
+  const { prompt } = await prompts(promptOption)
 
   // 请选择模型 base small medium
   const promptsList = {
-    type: "select",
-    name: "type",
-    message: "请选择模型",
+    type: 'select',
+    name: 'type',
+    message: '请选择模型',
     choices: [
       // 处理 metadata 信息
       {
-        title: "base.en",
-        value: "base.en",
+        title: 'base.en',
+        value: 'base.en',
       },
       {
-        title: "small.en",
-        value: "small.en",
+        title: 'small.en',
+        value: 'small.en',
       },
       {
-        title: "medium.en",
-        value: "medium.en",
+        title: 'medium.en',
+        value: 'medium.en',
       },
       {
-        title: "base",
-        value: "base",
+        title: 'base',
+        value: 'base',
       },
       {
-        title: "medium",
-        value: "medium",
+        title: 'medium',
+        value: 'medium',
       },
       {
-        title: "small",
-        value: "small",
+        title: 'small',
+        value: 'small',
       },
       {
-        title: "large-v3",
-        value: "large-v3",
+        title: 'large-v3',
+        value: 'large-v3',
       },
     ],
-  };
-  const { type } = await prompts(promptsList);
+  }
+  const { type } = await prompts(promptsList)
 
-  const bin = WHISPER_BIN;
+  const bin = WHISPER_BIN
   // console.log(bin, bin2, bin === bin2);
 
   const command = `${bin} -m ${WHISPER_MODEL}/ggml-${type}.bin -f ${filePath} -osrt --prompt '${
-    prompt || ""
-  } ${BASE_PROMPT}'`;
+    prompt || ''
+  } ${BASE_PROMPT}'`
 
-  const args = command.split(" ");
-  console.log("command:", args[0], args.slice(1));
+  const args = command.split(' ')
+  console.log('command:', args[0], args.slice(1))
 
   return spawnCommand(args[0], args.slice(1))
     .then(() => {
-      return { status: true };
+      return { status: true }
     })
     .catch((error) => {
-      console.error("Error:", error);
-      return { status: false };
-    });
-};
+      console.error('Error:', error)
+      return { status: false }
+    })
+}
 
-const handleCommand = async (filePath = "") => {
+async function handleCommand(filePath = '') {
   // console.log(3, filePath);
   // 核心不同入口
-  const mainEntryPrompt = handleFilePrompt;
-  const { type } = await prompts(mainEntryPrompt);
+  const mainEntryPrompt = handleFilePrompt
+  const { type } = await prompts(mainEntryPrompt)
 
-  if (type === "meta") {
-    await handleMeta(filePath);
-  } else if (type === "mp3") {
-    const res = await othersToMp3(filePath);
+  if (type === 'meta') {
+    await handleMeta(filePath)
+  }
+  else if (type === 'mp3') {
+    const res = await othersToMp3(filePath)
     if (res.status) {
-      console.log("转换完成");
+      console.log('转换完成')
     }
-  } else if (type === "wav") {
+  }
+  else if (type === 'wav') {
     // 使用子进程调用 ffmpeg
 
-    const res = await mp3ToWav(filePath);
+    const res = await mp3ToWav(filePath)
     if (res.status) {
-      console.log("转换完成");
+      console.log('转换完成')
 
       // 提问是否开始转写
       const promptsList = {
-        type: "confirm",
-        name: "isStart",
-        message: "是否开始转写",
-      };
-      const response = await prompts(promptsList);
+        type: 'confirm',
+        name: 'isStart',
+        message: '是否开始转写',
+      }
+      const response = await prompts(promptsList)
       if (response.isStart) {
-        console.log("开始转写");
-        await handleTransFile(filePath);
-      } else {
-        console.log("不需要转写");
+        console.log('开始转写')
+        await handleTransFile(filePath)
+      }
+      else {
+        console.log('不需要转写')
       }
     }
-  } else if (type === "mp3") {
+  }
+  else if (type === 'mp3') {
     // ffmpeg -i 00-0626-start.m4a -acodec libmp3lame -q:a 2 100-0626-start.mp3
     // 执行
     try {
-      const bash = `${FFMPEG_BIN} -i ${audioFilePath} -acodec libmp3lame -q:a 2 ${audioFilePath}.mp3`;
+      const bash = `${FFMPEG_BIN} -i ${audioFilePath} -acodec libmp3lame -q:a 2 ${audioFilePath}.mp3`
       exec(bash, (err, stdout, stderr) => {
         if (err) {
-          console.log(err);
-        } else {
-          console.log("转换完成");
+          console.log(err)
         }
-      });
-    } catch (error) {
-      console.log("处理失败" + error);
+        else {
+          console.log('转换完成')
+        }
+      })
     }
-  } else if (type === "text") {
-    console.log("开始转写");
-    try {
-      await handleTransFile(filePath);
-    } catch (error) {
-      console.log("转写失败" + error);
+    catch (error) {
+      console.log(`处理失败${error}`)
     }
   }
-};
+  else if (type === 'text') {
+    console.log('开始转写')
+    try {
+      await handleTransFile(filePath)
+    }
+    catch (error) {
+      console.log(`转写失败${error}`)
+    }
+  }
+}
 
 // meta
-const handleMeta = async (filePath) => {
-  const { Promise: NodeID3Promise } = id3;
+async function handleMeta(filePath) {
+  const { Promise: NodeID3Promise } = id3
 
   const writeMeta = (tags, filepath) => {
     NodeID3Promise.write(tags, filepath)
       .then((res) => {
-        console.log("ok", res);
+        console.log('ok', res)
       })
       .catch((err) => {
-        console.log("err", err);
-      });
-  };
+        console.log('err', err)
+      })
+  }
 
   const readMeta = (filepath) => {
     NodeID3Promise.read(filepath).then((res) => {
-      console.log(res);
-    });
-  };
-
-  const promptsList = cliEntryPrompt;
-
-  const response = await prompts(promptsList);
-  if (response.type === "read") {
-    console.log("read");
-    readMeta(filePath);
-  } else {
-    console.log("write");
-    const response2 = await prompts(promptsQuestion);
-
-    const scriptUrl = import.meta.url;
-    const scriptPath = fileURLToPath(scriptUrl);
-    const absolutePath = path.dirname(scriptPath);
-
-    const cover = path.resolve(absolutePath, "../", response2.APIC);
-    response2.APIC = cover;
-
-    writeMeta(response2, filePath);
+      console.log(res)
+    })
   }
-};
+
+  const promptsList = cliEntryPrompt
+
+  const response = await prompts(promptsList)
+  if (response.type === 'read') {
+    console.log('read')
+    readMeta(filePath)
+  }
+  else {
+    console.log('write')
+    const response2 = await prompts(promptsQuestion)
+
+    const scriptUrl = import.meta.url
+    const scriptPath = fileURLToPath(scriptUrl)
+    const absolutePath = path.dirname(scriptPath)
+
+    const cover = path.resolve(absolutePath, '../', response2.APIC)
+    response2.APIC = cover
+
+    writeMeta(response2, filePath)
+  }
+}

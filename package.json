@@ -1,9 +1,12 @@
 {
   "name": "@web.worker/mp3-meta",
+  "type": "module",
   "version": "0.0.1",
   "description": "mp3 meta data parser",
+  "author": "",
+  "license": "ISC",
+  "keywords": [],
   "main": "index.js",
-  "type": "module",
   "bin": {
     "handle-podcast": "./bin/cli.js",
     "handle_podcast": "./bin/cli.js",
@@ -11,12 +14,11 @@
     "mp3-download": "./bin/download.js"
   },
   "scripts": {
+    "lint": "eslint",
+    "lint:fix": "eslint --fix",
     "check": "tsc --noEmit",
     "build": "tsx src/index.ts"
   },
-  "keywords": [],
-  "author": "",
-  "license": "ISC",
   "dependencies": {
     "cheerio": "1.0.0-rc.12",
     "cli-progress": "^3.12.0",
@@ -28,7 +30,9 @@
     "prompts": "^2.4.2"
   },
   "devDependencies": {
+    "@antfu/eslint-config": "^4.13.2",
     "@types/node": "20",
+    "eslint": "^9.28.0",
     "tsx": "^3.13.0",
     "typescript": "^5.2.2"
   }
