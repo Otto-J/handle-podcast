@@ -30,9 +30,8 @@
   },
   "devDependencies": {
     "@antfu/eslint-config": "^4.13.2",
-    "@types/node": "^20.17.57",
+    "@types/bun": "^1.2.15",
     "eslint": "^9.28.0",
-    "tsx": "^3.14.0",
-    "typescript": "^5.8.3"
+    "typescript": "^5"
   }
 }
