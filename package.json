@@ -14,10 +14,11 @@
     "mp3-download": "./bin/download.js"
   },
   "scripts": {
-    "lint": "eslint",
-    "lint:fix": "eslint --fix",
+    "lint": "eslint .",
+    "lint:fix": "eslint --fix .",
     "check": "tsc --noEmit",
-    "build": "tsx src/index.ts"
+    "build": "bun src/index.ts",
+    "prepare": "husky"
   },
   "dependencies": {
     "cheerio": "1.0.0",
@@ -32,6 +33,13 @@
     "@antfu/eslint-config": "^4.13.2",
     "@types/bun": "^1.2.15",
     "eslint": "^9.28.0",
+    "husky": "^9.1.7",
+    "lint-staged": "^16.1.0",
     "typescript": "^5"
+  },
+  "lint-staged": {
+    "*.{js,ts,jsx,tsx,mjs,cjs}": [
+      "npx eslint --fix"
+    ]
   }
 }
